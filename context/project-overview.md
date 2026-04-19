@@ -675,7 +675,7 @@ devsnip/
 
 ---
 
-## 🔐 Environment Variables
+## 🔐 Environment Variables Example
 
 ```bash
 # Database
@@ -736,3 +736,7 @@ REDIS_URL="redis://..."                  # If caching layer enabled
 - ✅ Zod validation at every trust boundary (form → action, client → API)
 - ✅ Optimistic UI for high-frequency actions (favorite, pin, tag)
 - ✅ Every AI call passes through a plan-gate helper — no scattered `isPro` checks
+
+### UI Prototype
+
+Refer to the @context/starter-ui/dashboard.html file for the base dashboard for reference on how I want the dashboard to be. 

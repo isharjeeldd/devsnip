@@ -1,5 +1,15 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# DevSnip
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+A developer knoweledge hub for code snippets, commands, links, prompts, images, links and custom types. 
+
+@AGENTS.md
+
+## Context files
+
+Read the following to get the full context of the project 
+
+- @context/project-overview.md
+- @context/design-system.md
+- @context/coding-standards.md
+- @context/ai-interaction.md
+- @context/current-feature.md
