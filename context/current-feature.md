@@ -4,7 +4,7 @@
 
 ## Status
 
-Complete — delivered on `main` (merged from `feature/dashboard-ui-phase-1`).
+Complete.
 
 ## Overview
 
@@ -42,4 +42,3 @@ Complete — delivered on `main` (merged from `feature/dashboard-ui-phase-1`).
 - **2026-04-19** — Initial Next.js + Tailwind setup. Cleaned up default Create Next App boilerplate (removed default public SVGs, updated `globals.css` and `page.tsx`). Added `context/` folder with project documentation.
 - **2026-04-19** — Updated current feature to combine Dashboard UI Phase 2 and Phase 3 scope (sidebar shell + main dashboard content).
 - **2026-04-19** — Implemented Phase 2–3: `dashboard-shell`, collapsible sidebar + mobile drawer, header, `/dashboard` page (stats, collections grid, pinned + recent items), `/items/[type]` placeholders, mock metrics, item-type icons, theme provider/toggle, Inter + mono fonts and design tokens in `globals.css` / `layout.tsx`. Item detail panel as right Vaul drawer (`item-detail-drawer.tsx`); snapshot state for close animation; Radix Dialog a11y (do not override `DialogTitle` id; `aria-describedby` opt-out on drawer content).
-- **2026-04-19** — Fast-forward merged `feature/dashboard-ui-phase-1` into `main` and pushed.
