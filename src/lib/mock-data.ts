@@ -353,6 +353,24 @@ export const mockItems: MockItem[] = [
     collectionIds: ["col_react_patterns"],
     lastUsedLabel: "5d",
   },
+  {
+    id: "itm_eslint_flat",
+    userId: uid,
+    title: "ESLint flat config — TypeScript",
+    description:
+      "Starter flat config with typescript-eslint and import sorting for app router repos.",
+    contentType: "text",
+    content:
+      "import tseslint from 'typescript-eslint';\n\nexport default tseslint.config(\n  { ignores: ['dist', '.next'] },\n  tseslint.configs.recommended,\n);",
+    url: null,
+    language: "ts",
+    isFavorite: true,
+    isPinned: false,
+    itemTypeId: "ity_snippet",
+    tagNames: ["eslint", "tooling"],
+    collectionIds: ["col_design_system"],
+    lastUsedLabel: "6d",
+  },
 ];
 
 /** Single bundle import for dashboard mocks */
