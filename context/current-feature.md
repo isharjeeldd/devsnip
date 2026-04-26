@@ -1,6 +1,6 @@
 # Current Feature
 
-**Dashboard Items** — Replace dummy item data on the dashboard with real data from the Neon database via Prisma.
+**Stats & Sidebar** — Wire real database data into the dashboard stats and sidebar.
 
 ## Status
 
@@ -8,22 +8,20 @@ Complete
 
 ## Overview
 
-Replace the dummy item data displayed in the main area of the dashboard (right side) with actual data from the database. This includes both pinned and recent items. It should look how it does now, but instead of using data from `src/lib/mock-data.ts`, it should be from our Neon database using Prisma.
-
-If there are no pinned items, nothing should display there.
+Replace mock/static data in the dashboard stats area and sidebar with real data from the Neon database via Prisma. The stats cards should reflect actual item/collection counts. The sidebar should list all system item types with their icons (linking to `/items/[typename]`), show recent collections with a colored circle based on the most-used item type (instead of static icons), and include a "View all collections" link below the collections list.
 
 ## Goals
 
-- [x] Create `src/lib/db/items.ts` with data fetching functions
-- [x] Fetch items directly in server component
-- [x] Item card icon/border derived from the item type
-- [x] Display item type tags and anything else currently there
-- [x] Update collection stats display
+- [x] Display stats (total items, favorites, collections) from real DB data
+- [x] Display system item types in sidebar with icons, each linking to `/items/[typename]`
+- [x] Add "View all collections" link under the sidebar collections list → `/collections`
+- [x] Sidebar recent collections: replace star icons with a colored circle based on the most-used item type in that collection (keep stars only for favorites)
+- [x] Add `getSystemItemTypes` to `src/lib/db/items.ts`
 
 ## Notes
 
-- Spec: `context/features/dashboard-items-spec.md`
-- Reference `context/screenshots/dashboard-ui-main.png` if needed — layout and design is already there
+- Spec: `context/features/stats-sidebar-spec.md`
+- Reference `src/lib/db/collections.ts` for patterns — it already computes `accentColor`/`accentSlug` per collection
 
 ## History
 
@@ -36,3 +34,4 @@ If there are no pinned items, nothing should display there.
 - **2026-04-26** — Added `password String?` and `emailVerified DateTime?` to `User` schema. Installed `bcryptjs`. Rewrote `prisma/seed.ts` with full dev seed: demo user, 7 system item types (icons/colors per seed-spec), and 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) with 17 total items.
 - **2026-04-26** — Dashboard Collections: created `src/lib/db/collections.ts` (`CollectionCardData` type, `getCollectionsForDashboard`, `getDemoUserId`). Updated `collection-card.tsx` to use DB type and render real `ItemTypeIcon` stack. Updated `dashboard-interactive-area.tsx` to accept `CollectionCardData[]`. Loosened `item-detail-drawer.tsx` collections prop to `{ id, name }[]`. Made `dashboard/page.tsx` async, fetching real collections from Neon with graceful fallback. Stats cards now reflect real collection counts.
 - **2026-04-26** — Dashboard Items: created `src/lib/db/items.ts` (`DashboardItem`, `DashboardItemType` types, `getPinnedItems`, `getRecentItems`, `getItemStats`). Removed `MockItem`/`MockItemType` from all dashboard components; replaced with DB types. Updated `ItemTypeIcon` to accept `slug: string` with fallback icon. Removed `itemTypes` prop from `DashboardInteractiveArea` — each item embeds its type directly. Pinned section conditionally hidden when no pinned items. Stats cards (item count, favorite count) now come from DB. `getDemoUser` added to `collections.ts`.
+- **2026-04-26** — Stats & Sidebar: added `getSystemItemTypes` to `src/lib/db/items.ts` and `SidebarItemType` type. Updated `getDemoUser` to return `email` and `isPro`. Made `dashboard/layout.tsx` async — fetches system item types, collections, and item stats from DB in parallel. Replaced all `MockUser`/`MockItemType`/`MockCollection` props in `DashboardShell` and `DashboardSidebar` with real DB types (`SidebarUser`, `SidebarItemType`, `CollectionCardData`). Removed `countsByTypeId` prop (count now embedded in each type). Item type links go to `/items/${slug}s`. Recent collections show a colored circle based on `accentColor` instead of `ItemTypeIcon`. Favorites keep `ItemTypeIcon`. "View all collections" link added below recent collections list. Progress bar in free-plan card now uses real item count.

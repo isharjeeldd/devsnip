@@ -8,27 +8,28 @@ import {
   LayoutDashboard,
   List,
   PanelLeft,
-  Plus,
   Star,
 } from "lucide-react";
 
 import { ItemTypeIcon } from "@/components/item-type-icon";
 import { Button } from "@/components/ui/button";
-import { itemTypeHref } from "@/lib/dashboard-metrics";
-import type {
-  MockCollection,
-  MockItemType,
-  MockUser,
-} from "@/lib/mock-data";
+import type { CollectionCardData } from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
+
+export type SidebarUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  isPro: boolean;
+};
 
 export type DashboardSidebarProps = {
   collapsed: boolean;
-  user: MockUser;
-  itemTypes: MockItemType[];
-  countsByTypeId: Record<string, number>;
-  favoriteCollections: MockCollection[];
-  recentCollections: MockCollection[];
+  user: SidebarUser;
+  itemTypes: SidebarItemType[];
+  favoriteCollections: CollectionCardData[];
+  recentCollections: CollectionCardData[];
   totalItems: number;
   favoriteItemsCount: number;
   onToggleCollapse: () => void;
@@ -100,7 +101,6 @@ export function DashboardSidebar({
   collapsed,
   user,
   itemTypes,
-  countsByTypeId,
   favoriteCollections,
   recentCollections,
   totalItems,
@@ -152,7 +152,7 @@ export function DashboardSidebar({
             {!collapsed ? <span className="min-w-0 flex-1 truncate">Dashboard</span> : null}
           </SidebarNavLink>
           <SidebarNavLink
-            href="/dashboard"
+            href="/items"
             active={false}
             collapsed={collapsed}
             trailing={totalItems}
@@ -161,7 +161,7 @@ export function DashboardSidebar({
             {!collapsed ? <span className="min-w-0 flex-1 truncate">All items</span> : null}
           </SidebarNavLink>
           <SidebarNavLink
-            href="/dashboard"
+            href="/favorites"
             active={false}
             collapsed={collapsed}
             trailing={favoriteItemsCount}
@@ -170,7 +170,7 @@ export function DashboardSidebar({
             {!collapsed ? <span className="min-w-0 flex-1 truncate">Favorites</span> : null}
           </SidebarNavLink>
           <SidebarNavLink
-            href="/dashboard"
+            href="/recent"
             active={false}
             collapsed={collapsed}
             trailing={undefined}
@@ -183,12 +183,11 @@ export function DashboardSidebar({
         <NavSectionTitle collapsed={collapsed}>Types</NavSectionTitle>
         <nav className="flex flex-col gap-px">
           {itemTypes.map((t) => {
-            const count = countsByTypeId[t.id] ?? 0;
             const locked = !user.isPro && (t.slug === "file" || t.slug === "image");
             return (
               <Link
                 key={t.id}
-                href={itemTypeHref(t.slug)}
+                href={`/items/${t.slug}s`}
                 className={cn(
                   "relative flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] tracking-[-0.005em] transition-colors",
                   "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
@@ -211,7 +210,7 @@ export function DashboardSidebar({
                     {locked ? (
                       <span className="text-[10px] text-muted-foreground">PRO</span>
                     ) : (
-                      count
+                      t.itemCount
                     )}
                   </span>
                 )}
@@ -222,64 +221,54 @@ export function DashboardSidebar({
 
         <NavSectionTitle collapsed={collapsed}>Favorites</NavSectionTitle>
         <nav className="flex flex-col gap-px">
-          {favoriteCollections.map((c) => {
-            const accent =
-              itemTypes.find((x) => x.slug === c.accentSlug)?.color ?? "#7170ff";
-            return (
-              <SidebarNavLink
-                key={c.id}
-                href="/dashboard"
-                active={false}
-                collapsed={collapsed}
-                trailing={c.itemCount}
-              >
-                <ItemTypeIcon
-                  slug={c.accentSlug}
-                  color={accent}
-                  shape="rounded"
-                  size="sm"
-                />
-                {!collapsed ? (
-                  <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                ) : null}
-              </SidebarNavLink>
-            );
-          })}
+          {favoriteCollections.map((c) => (
+            <SidebarNavLink
+              key={c.id}
+              href={`/collections/${c.id}`}
+              active={false}
+              collapsed={collapsed}
+              trailing={c.itemCount}
+            >
+              <Star className="size-3.5 shrink-0 fill-type-note text-type-note" aria-hidden />
+              {!collapsed ? (
+                <span className="min-w-0 flex-1 truncate">{c.name}</span>
+              ) : null}
+            </SidebarNavLink>
+          ))}
         </nav>
 
         <NavSectionTitle collapsed={collapsed}>Recent collections</NavSectionTitle>
         <nav className="flex flex-col gap-px">
-          {recentCollections.map((c) => {
-            const accent =
-              itemTypes.find((x) => x.slug === c.accentSlug)?.color ?? "#7170ff";
-            return (
-              <SidebarNavLink
-                key={c.id}
-                href="/dashboard"
-                active={false}
-                collapsed={collapsed}
-                trailing={c.itemCount}
-              >
-                <ItemTypeIcon
-                  slug={c.accentSlug}
-                  color={accent}
-                  shape="rounded"
-                  size="sm"
-                />
-                {!collapsed ? (
-                  <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                ) : null}
-              </SidebarNavLink>
-            );
-          })}
+          {recentCollections.map((c) => (
+            <SidebarNavLink
+              key={c.id}
+              href={`/collections/${c.id}`}
+              active={false}
+              collapsed={collapsed}
+              trailing={c.itemCount}
+            >
+              <span
+                className="inline-block shrink-0 rounded-full"
+                style={{
+                  width: 10,
+                  height: 10,
+                  backgroundColor: c.accentColor,
+                  boxShadow: `0 0 0 2px color-mix(in oklab, ${c.accentColor} 30%, transparent)`,
+                }}
+                aria-hidden
+              />
+              {!collapsed ? (
+                <span className="min-w-0 flex-1 truncate">{c.name}</span>
+              ) : null}
+            </SidebarNavLink>
+          ))}
           {!collapsed ? (
-            <button
-              type="button"
+            <Link
+              href="/collections"
               className="flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-left text-[13.5px] text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground"
             >
-              <Plus className="size-3 shrink-0 opacity-70" />
-              <span className="min-w-0 flex-1 truncate">New collection</span>
-            </button>
+              <span className="min-w-0 flex-1 truncate">View all collections</span>
+            </Link>
           ) : null}
         </nav>
       </div>
@@ -298,7 +287,8 @@ export function DashboardSidebar({
             </p>
             <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/[0.08]">
               <div
-                className="h-full w-[68%] rounded-full bg-gradient-to-r from-[#5e6ad2] to-[#828fff]"
+                className="h-full rounded-full bg-gradient-to-r from-[#5e6ad2] to-[#828fff]"
+                style={{ width: `${Math.min(Math.round((totalItems / 50) * 100), 100)}%` }}
                 aria-hidden
               />
             </div>

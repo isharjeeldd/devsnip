@@ -1,5 +1,34 @@
 import { prisma } from "@/lib/prisma";
 
+export type SidebarItemType = {
+  id: string;
+  name: string;
+  color: string;
+  slug: string;
+  isSystem: boolean;
+  itemCount: number;
+};
+
+export async function getSystemItemTypes(userId: string): Promise<SidebarItemType[]> {
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true },
+    include: {
+      items: {
+        where: { userId },
+        select: { id: true },
+      },
+    },
+  });
+  return types.map((t) => ({
+    id: t.id,
+    name: t.name,
+    color: t.color,
+    slug: t.name.toLowerCase(),
+    isSystem: t.isSystem,
+    itemCount: t.items.length,
+  }));
+}
+
 export type DashboardItemType = {
   id: string;
   name: string;
@@ -94,9 +123,15 @@ export async function getPinnedItems(userId: string): Promise<DashboardItem[]> {
   return items.map(mapItem);
 }
 
-export async function getRecentItems(userId: string): Promise<DashboardItem[]> {
+export async function getRecentItems(
+  userId: string,
+  excludeIds: string[] = [],
+): Promise<DashboardItem[]> {
   const items = await prisma.item.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+    },
     include: {
       itemType: { select: { id: true, name: true, color: true } },
       tags: { select: { name: true } },
@@ -104,6 +139,25 @@ export async function getRecentItems(userId: string): Promise<DashboardItem[]> {
     },
     orderBy: { updatedAt: "desc" },
     take: 10,
+  });
+  return items.map(mapItem);
+}
+
+export async function getItemsByCollection(
+  collectionId: string,
+  userId: string,
+): Promise<DashboardItem[]> {
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      collections: { some: { collectionId } },
+    },
+    include: {
+      itemType: { select: { id: true, name: true, color: true } },
+      tags: { select: { name: true } },
+      collections: { select: { collectionId: true } },
+    },
+    orderBy: { updatedAt: "desc" },
   });
   return items.map(mapItem);
 }

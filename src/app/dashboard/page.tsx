@@ -3,6 +3,7 @@ import { DashboardInteractiveArea } from "@/components/dashboard/dashboard-inter
 import {
   getDemoUser,
   getCollectionsForDashboard,
+  getCollectionStats,
 } from "@/lib/db/collections";
 import {
   getPinnedItems,
@@ -22,22 +23,32 @@ export default async function DashboardPage() {
   const demoUser = await getDemoUser();
 
   const emptyStats = { total: 0, favoriteCount: 0 };
-  const [collections, pinnedItems, recentItems, itemStats] = demoUser
-    ? await Promise.all([
-        getCollectionsForDashboard(demoUser.id).catch(() => []),
-        getPinnedItems(demoUser.id).catch(() => []),
-        getRecentItems(demoUser.id).catch(() => []),
-        getItemStats(demoUser.id).catch(() => emptyStats),
-      ])
-    : [
-        [] as Awaited<ReturnType<typeof getCollectionsForDashboard>>,
-        [] as Awaited<ReturnType<typeof getPinnedItems>>,
-        [] as Awaited<ReturnType<typeof getRecentItems>>,
-        emptyStats,
-      ];
+  const emptyColStats = { total: 0, favoriteCount: 0 };
 
-  const allCount = collections.length;
-  const favCount = collections.filter((c) => c.isFavorite).length;
+  let collections: Awaited<ReturnType<typeof getCollectionsForDashboard>> = [];
+  let pinnedItems: Awaited<ReturnType<typeof getPinnedItems>> = [];
+  let recentItems: Awaited<ReturnType<typeof getRecentItems>> = [];
+  let itemStats = emptyStats;
+  let collectionStats = emptyColStats;
+
+  if (demoUser) {
+    const [cols, pinned, iStats, cStats] = await Promise.all([
+      getCollectionsForDashboard(demoUser.id).catch(() => []),
+      getPinnedItems(demoUser.id).catch(() => []),
+      getItemStats(demoUser.id).catch(() => emptyStats),
+      getCollectionStats(demoUser.id).catch(() => emptyColStats),
+    ]);
+    collections = cols;
+    pinnedItems = pinned;
+    itemStats = iStats;
+    collectionStats = cStats;
+
+    const pinnedIds = pinned.map((p) => p.id);
+    recentItems = await getRecentItems(demoUser.id, pinnedIds).catch(() => []);
+  }
+
+  const allCount = collectionStats.total;
+  const favCount = collectionStats.favoriteCount;
   const recentTop = recentItems[0];
 
   return (

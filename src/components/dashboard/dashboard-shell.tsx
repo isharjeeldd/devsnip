@@ -2,23 +2,21 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 
-import type {
-  MockCollection,
-  MockItemType,
-  MockUser,
-} from "@/lib/mock-data";
+import type { CollectionCardData } from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
+import { DashboardSidebar, type SidebarUser } from "@/components/dashboard/dashboard-sidebar";
+
+export type { SidebarUser };
 
 export type DashboardShellProps = {
   children: ReactNode;
-  user: MockUser;
-  itemTypes: MockItemType[];
-  countsByTypeId: Record<string, number>;
-  favoriteCollections: MockCollection[];
-  recentCollections: MockCollection[];
+  user: SidebarUser;
+  itemTypes: SidebarItemType[];
+  favoriteCollections: CollectionCardData[];
+  recentCollections: CollectionCardData[];
   totalItems: number;
   favoriteItemsCount: number;
 };
@@ -27,7 +25,6 @@ export function DashboardShell({
   children,
   user,
   itemTypes,
-  countsByTypeId,
   favoriteCollections,
   recentCollections,
   totalItems,
@@ -82,7 +79,6 @@ export function DashboardShell({
             collapsed={collapsed}
             user={user}
             itemTypes={itemTypes}
-            countsByTypeId={countsByTypeId}
             favoriteCollections={favoriteCollections}
             recentCollections={recentCollections}
             totalItems={totalItems}

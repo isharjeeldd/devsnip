@@ -22,8 +22,22 @@ const SYSTEM_TYPES = [
 ] as const;
 
 async function main() {
-  // ── 1. System item types ──────────────────────────────────────────────────
+  // ── 1. Clean slate — delete in FK-safe order ────────────────────────────
+  const existingUser = await prisma.user.findUnique({
+    where: { email: "demo@devstash.io" },
+    select: { id: true },
+  });
+  if (existingUser) {
+    await prisma.itemCollection.deleteMany({
+      where: { item: { userId: existingUser.id } },
+    });
+    await prisma.item.deleteMany({ where: { userId: existingUser.id } });
+    await prisma.collection.deleteMany({ where: { userId: existingUser.id } });
+    await prisma.user.delete({ where: { id: existingUser.id } });
+  }
   await prisma.itemType.deleteMany({ where: { isSystem: true } });
+
+  // ── 2. System item types ──────────────────────────────────────────────────
   await prisma.itemType.createMany({
     data: SYSTEM_TYPES.map((t) => ({ ...t, userId: null })),
   });
@@ -31,8 +45,7 @@ async function main() {
   const type = Object.fromEntries(typeRows.map((t) => [t.name, t.id]));
   console.log(`Seeded ${SYSTEM_TYPES.length} system ItemTypes.`);
 
-  // ── 2. Demo user ──────────────────────────────────────────────────────────
-  await prisma.user.deleteMany({ where: { email: "demo@devstash.io" } });
+  // ── 3. Demo user ──────────────────────────────────────────────────────────
   const passwordHash = await bcrypt.hash("12345678", 12);
   const user = await prisma.user.create({
     data: {
@@ -45,7 +58,7 @@ async function main() {
   });
   console.log(`Created demo user: ${user.email}`);
 
-  // ── 3. Collections + items ────────────────────────────────────────────────
+  // ── 4. Collections + items ────────────────────────────────────────────────
 
   // ── React Patterns ────────────────────────────────────────────────────────
   const reactPatterns = await prisma.collection.create({
@@ -548,6 +561,227 @@ pnpm audit --fix`,
     data: designItems.map((item) => ({ itemId: item.id, collectionId: designResources.id })),
   });
   console.log(`Created "Design Resources" collection with ${designItems.length} items.`);
+
+  // ── CSS Tricks (★ favorite) ──────────────────────────────────────────────
+  const cssTricks = await prisma.collection.create({
+    data: {
+      name: "CSS Tricks",
+      description: "Modern CSS patterns, layouts, and animations",
+      isFavorite: true,
+      userId: user.id,
+    },
+  });
+
+  const cssItems = await Promise.all([
+    prisma.item.create({
+      data: {
+        title: "Container Queries",
+        description: "Responsive components that adapt to their container, not the viewport",
+        contentType: "text",
+        language: "css",
+        userId: user.id,
+        itemTypeId: type.snippet,
+        content: `.card-wrapper {
+  container-type: inline-size;
+  container-name: card;
+}
+
+@container card (min-width: 400px) {
+  .card {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@container card (max-width: 399px) {
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+}`,
+      },
+    }),
+
+    prisma.item.create({
+      data: {
+        title: "Scroll-Driven Animations",
+        description: "CSS-only scroll-linked animations using animation-timeline",
+        contentType: "text",
+        language: "css",
+        userId: user.id,
+        itemTypeId: type.snippet,
+        content: `.hero {
+  animation: fade-in linear both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; translate: 0 40px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+.progress-bar {
+  animation: grow-width linear;
+  animation-timeline: scroll();
+  transform-origin: left;
+}
+
+@keyframes grow-width {
+  from { scale: 0 1; }
+  to   { scale: 1 1; }
+}`,
+      },
+    }),
+
+    prisma.item.create({
+      data: {
+        title: "CSS Nesting & :has()",
+        description: "Modern CSS selectors for parent-aware and nested styling",
+        contentType: "text",
+        language: "css",
+        userId: user.id,
+        itemTypeId: type.snippet,
+        isFavorite: true,
+        content: `.form-field {
+  & label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  & input {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  &:has(input:invalid) {
+    & label { color: var(--error); }
+    & input { border-color: var(--error); }
+  }
+
+  &:has(input:focus) {
+    & label { color: var(--accent); }
+  }
+}`,
+      },
+    }),
+  ]);
+
+  await prisma.itemCollection.createMany({
+    data: cssItems.map((item) => ({ itemId: item.id, collectionId: cssTricks.id })),
+  });
+  console.log(`Created "CSS Tricks" collection (★) with ${cssItems.length} items.`);
+
+  // ── API Patterns (★ favorite) ────────────────────────────────────────────
+  const apiPatterns = await prisma.collection.create({
+    data: {
+      name: "API Patterns",
+      description: "REST, error handling, and API design best practices",
+      isFavorite: true,
+      userId: user.id,
+    },
+  });
+
+  const apiItems = await Promise.all([
+    prisma.item.create({
+      data: {
+        title: "Typed API Response Helper",
+        description: "Type-safe success/error response wrappers for Next.js API routes",
+        contentType: "text",
+        language: "typescript",
+        userId: user.id,
+        itemTypeId: type.snippet,
+        content: `type ApiSuccess<T> = { success: true; data: T };
+type ApiError = { success: false; error: string; code?: string };
+type ApiResponse<T> = ApiSuccess<T> | ApiError;
+
+export function ok<T>(data: T): ApiSuccess<T> {
+  return { success: true, data };
+}
+
+export function fail(error: string, code?: string): ApiError {
+  return { success: false, error, code };
+}
+
+// Usage in a Server Action:
+export async function createItem(formData: FormData): Promise<ApiResponse<{ id: string }>> {
+  try {
+    const title = formData.get('title') as string;
+    if (!title) return fail('Title is required', 'VALIDATION');
+    const item = await db.item.create({ data: { title } });
+    return ok({ id: item.id });
+  } catch {
+    return fail('Failed to create item', 'INTERNAL');
+  }
+}`,
+      },
+    }),
+
+    prisma.item.create({
+      data: {
+        title: "Rate Limiting Middleware",
+        description: "Simple in-memory rate limiter using a sliding window",
+        contentType: "text",
+        language: "typescript",
+        userId: user.id,
+        itemTypeId: type.snippet,
+        content: `const rateMap = new Map<string, number[]>();
+
+export function rateLimit(
+  key: string,
+  limit: number = 60,
+  windowMs: number = 60_000,
+): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const hits = rateMap.get(key)?.filter((t) => t > now - windowMs) ?? [];
+  hits.push(now);
+  rateMap.set(key, hits);
+
+  return {
+    allowed: hits.length <= limit,
+    remaining: Math.max(0, limit - hits.length),
+  };
+}`,
+      },
+    }),
+
+    prisma.item.create({
+      data: {
+        title: "REST API Design Notes",
+        description: "Quick reference for consistent REST API design decisions",
+        contentType: "text",
+        userId: user.id,
+        itemTypeId: type.note,
+        content: `## URL Conventions
+- Plural nouns: /users, /items, /collections
+- Nested resources: /collections/:id/items
+- Filter via query params: /items?type=snippet&favorite=true
+
+## Status Codes
+- 200 OK — successful GET/PUT/PATCH
+- 201 Created — successful POST
+- 204 No Content — successful DELETE
+- 400 Bad Request — validation errors
+- 401 Unauthorized — missing/invalid auth
+- 403 Forbidden — valid auth but no permission
+- 404 Not Found — resource doesn't exist
+- 409 Conflict — duplicate or state conflict
+- 429 Too Many Requests — rate limited
+
+## Pagination
+- Cursor-based preferred: ?cursor=abc&limit=20
+- Offset-based for simple cases: ?page=2&limit=20
+- Always return: { data, nextCursor?, total? }`,
+      },
+    }),
+  ]);
+
+  await prisma.itemCollection.createMany({
+    data: apiItems.map((item) => ({ itemId: item.id, collectionId: apiPatterns.id })),
+  });
+  console.log(`Created "API Patterns" collection (★) with ${apiItems.length} items.`);
 
   console.log("\nSeed complete.");
 }

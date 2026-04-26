@@ -4,7 +4,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getDemoUser, getCollectionsForDashboard } from "@/lib/db/collections";
 import { getSystemItemTypes, getItemStats } from "@/lib/db/items";
 
-export default async function DashboardLayout({
+export default async function CollectionsLayout({
   children,
 }: Readonly<{
   children: ReactNode;

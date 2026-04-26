@@ -46,7 +46,8 @@ async function main() {
   });
   console.log(`\n✓ Collections (${collections.length}):`);
   for (const col of collections) {
-    console.log(`    "${col.name}" — ${col.items.length} item(s)`);
+    const fav = col.isFavorite ? " ★" : "";
+    console.log(`    "${col.name}"${fav} — ${col.items.length} item(s)`);
     for (const { item } of col.items) {
       const label = item.url ?? item.title;
       console.log(`        [${item.itemType.name}] ${label}`);

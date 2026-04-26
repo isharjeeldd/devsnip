@@ -30,16 +30,6 @@ export function DashboardInteractiveArea({
 }: DashboardInteractiveAreaProps) {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const pinnedIdSet = useMemo(
-    () => new Set(pinnedItems.map((i) => i.id)),
-    [pinnedItems],
-  );
-
-  const recentForGrid = useMemo(
-    () => recentItems.filter((i) => !pinnedIdSet.has(i.id)),
-    [recentItems, pinnedIdSet],
-  );
-
   const itemsById = useMemo(() => {
     const m = new Map<string, DashboardItem>();
     for (const it of pinnedItems) {
@@ -172,7 +162,7 @@ export function DashboardInteractiveArea({
           }
         />
         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2 xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
-          {recentForGrid.map((it) => (
+          {recentItems.map((it) => (
             <DashboardItemCard
               key={it.id}
               item={it}
