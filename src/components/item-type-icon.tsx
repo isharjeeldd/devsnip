@@ -10,13 +10,9 @@ import {
   Terminal,
 } from "lucide-react";
 
-import type { MockItemTypeSlug } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-const ICON_MAP: Record<
-  MockItemTypeSlug,
-  ComponentType<LucideProps>
-> = {
+const ICON_MAP: Record<string, ComponentType<LucideProps>> = {
   snippet: Code2,
   prompt: MessageSquareText,
   note: StickyNote,
@@ -27,7 +23,7 @@ const ICON_MAP: Record<
 };
 
 export type ItemTypeIconProps = {
-  slug: MockItemTypeSlug;
+  slug: string;
   color: string;
   /** Circle (types) vs soft square (collections sidebar). */
   shape?: "circle" | "rounded";
@@ -44,7 +40,7 @@ export function ItemTypeIcon({
   className,
   "aria-hidden": ariaHidden,
 }: ItemTypeIconProps) {
-  const Icon = ICON_MAP[slug];
+  const Icon = ICON_MAP[slug] ?? FileText;
   const box =
     size === "sm"
       ? shape === "circle"

@@ -8,59 +8,22 @@ import { DashboardItemCard } from "@/components/dashboard/item-card";
 import { ItemDetailDrawer } from "@/components/dashboard/item-detail-drawer";
 import { DashboardSectionHeader } from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
-import type {
-  MockCollection,
-  MockItem,
-  MockItemType,
-} from "@/lib/mock-data";
+import type { CollectionCardData } from "@/lib/db/collections";
+import type { DashboardItem } from "@/lib/db/items";
 
 export type DashboardInteractiveAreaProps = {
-  pinnedItems: MockItem[];
-  recentItems: MockItem[];
-  itemTypes: MockItemType[];
-  collections: MockCollection[];
-  items: MockItem[];
+  pinnedItems: DashboardItem[];
+  recentItems: DashboardItem[];
+  collections: CollectionCardData[];
   allCount: number;
   favCount: number;
   sharedCount: number;
 };
 
-function findType(
-  itemTypes: MockItemType[],
-  itemTypeId: string,
-): MockItemType | undefined {
-  return itemTypes.find((t) => t.id === itemTypeId);
-}
-
-function stackForCollection(
-  collectionId: string,
-  items: MockItem[],
-  itemTypes: MockItemType[],
-): string[] {
-  const colors: string[] = [];
-  const seen = new Set<string>();
-  for (const it of items) {
-    if (!it.collectionIds.includes(collectionId)) {
-      continue;
-    }
-    const t = itemTypes.find((x) => x.id === it.itemTypeId);
-    if (t && !seen.has(t.id)) {
-      seen.add(t.id);
-      colors.push(t.color);
-      if (colors.length >= 4) {
-        break;
-      }
-    }
-  }
-  return colors;
-}
-
 export function DashboardInteractiveArea({
   pinnedItems,
   recentItems,
-  itemTypes,
   collections,
-  items,
   allCount,
   favCount,
   sharedCount,
@@ -78,7 +41,7 @@ export function DashboardInteractiveArea({
   );
 
   const itemsById = useMemo(() => {
-    const m = new Map<string, MockItem>();
+    const m = new Map<string, DashboardItem>();
     for (const it of pinnedItems) {
       m.set(it.id, it);
     }
@@ -89,38 +52,32 @@ export function DashboardInteractiveArea({
   }, [pinnedItems, recentItems]);
 
   const openItem = openId ? itemsById.get(openId) ?? null : null;
-  const openType = openItem
-    ? findType(itemTypes, openItem.itemTypeId) ?? null
-    : null;
+  const openType = openItem?.itemType ?? null;
 
   return (
     <>
-      <section className="mt-10 space-y-3.5">
-        <DashboardSectionHeader
-          title="Pinned"
-          right={
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {pinnedItems.length} pinned
-            </span>
-          }
-        />
-        <div className="grid grid-cols-1 gap-2.5 min-[560px]:grid-cols-2 xl:grid-cols-3">
-          {pinnedItems.map((it) => {
-            const t = findType(itemTypes, it.itemTypeId);
-            if (!t) {
-              return null;
+      {pinnedItems.length > 0 && (
+        <section className="mt-10 space-y-3.5">
+          <DashboardSectionHeader
+            title="Pinned"
+            right={
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {pinnedItems.length} pinned
+              </span>
             }
-            return (
+          />
+          <div className="grid grid-cols-1 gap-2.5 min-[560px]:grid-cols-2 xl:grid-cols-3">
+            {pinnedItems.map((it) => (
               <DashboardItemCard
                 key={it.id}
                 item={it}
-                itemType={t}
+                itemType={it.itemType}
                 onOpen={() => setOpenId(it.id)}
               />
-            );
-          })}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-10 space-y-3.5">
         <DashboardSectionHeader
@@ -165,22 +122,9 @@ export function DashboardInteractiveArea({
           }
         />
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
-          {collections.map((c) => {
-            const accent =
-              itemTypes.find((x) => x.slug === c.accentSlug)?.color ??
-              "#7170ff";
-            const stack = stackForCollection(c.id, items, itemTypes);
-            return (
-              <CollectionCard
-                key={c.id}
-                collection={c}
-                accentSlug={c.accentSlug}
-                tint={accent}
-                stackColors={stack}
-                favorite={c.isFavorite}
-              />
-            );
-          })}
+          {collections.map((c) => (
+            <CollectionCard key={c.id} collection={c} />
+          ))}
           <button
             type="button"
             className="group flex min-h-[148px] cursor-pointer flex-col items-center justify-center rounded-[14px] border border-dashed border-border bg-[linear-gradient(135deg,rgba(255,255,255,0.02)_0_8px,transparent_8px_16px),var(--card)] px-4 py-6 text-center text-muted-foreground transition-[border-color,color] hover:border-[#7170ff] hover:text-foreground"
@@ -228,20 +172,14 @@ export function DashboardInteractiveArea({
           }
         />
         <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2 xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
-          {recentForGrid.map((it) => {
-            const t = findType(itemTypes, it.itemTypeId);
-            if (!t) {
-              return null;
-            }
-            return (
-              <DashboardItemCard
-                key={it.id}
-                item={it}
-                itemType={t}
-                onOpen={() => setOpenId(it.id)}
-              />
-            );
-          })}
+          {recentForGrid.map((it) => (
+            <DashboardItemCard
+              key={it.id}
+              item={it}
+              itemType={it.itemType}
+              onOpen={() => setOpenId(it.id)}
+            />
+          ))}
         </div>
       </section>
 

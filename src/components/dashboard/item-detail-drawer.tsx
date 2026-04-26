@@ -18,25 +18,20 @@ import {
   DrawerFooter,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import type {
-  MockCollection,
-  MockItem,
-  MockItemType,
-} from "@/lib/mock-data";
+import type { DashboardItem, DashboardItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
+
+type CollectionRef = { id: string; name: string };
 
 export type ItemDetailDrawerProps = {
   open: boolean;
-  item: MockItem | null;
-  itemType: MockItemType | null;
-  collections: MockCollection[];
+  item: DashboardItem | null;
+  itemType: DashboardItemType | null;
+  collections: CollectionRef[];
   onClose: () => void;
 };
 
-function collectionNames(
-  item: MockItem,
-  collections: MockCollection[],
-): string[] {
+function collectionNames(item: DashboardItem, collections: CollectionRef[]): string[] {
   return item.collectionIds
     .map((id) => collections.find((c) => c.id === id)?.name)
     .filter((n): n is string => Boolean(n));
@@ -50,8 +45,8 @@ export function ItemDetailDrawer({
   onClose,
 }: ItemDetailDrawerProps) {
   const [snapshot, setSnapshot] = useState<{
-    item: MockItem;
-    itemType: MockItemType;
+    item: DashboardItem;
+    itemType: DashboardItemType;
   } | null>(null);
 
   /* Keep last opened item so the panel can finish Vaul’s close animation after the parent clears selection. */

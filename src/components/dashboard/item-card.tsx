@@ -2,12 +2,12 @@ import type { CSSProperties } from "react";
 import { Pin } from "lucide-react";
 
 import { ItemTypeIcon } from "@/components/item-type-icon";
-import type { MockItem, MockItemType } from "@/lib/mock-data";
+import type { DashboardItem, DashboardItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
 
 export type DashboardItemCardProps = {
-  item: MockItem;
-  itemType: MockItemType;
+  item: DashboardItem;
+  itemType: DashboardItemType;
   onOpen?: () => void;
 };
 
